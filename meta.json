@@ -1,0 +1,33 @@
+{
+  "$schema": "https://dl.viam.dev/module.schema.json",
+  "module_id": "hipsterbrown:dofbot",
+  "visibility": "public",
+  "url": "https://github.com/hipsterbrown/dofbot",
+  "description": "Modular arm component: arm",
+  "models": [
+    {
+      "api": "rdk:component:arm",
+      "model": "hipsterbrown:dofbot:arm",
+      "short_description": "Provide a short (100 characters or less) description of this model here",
+      "markdown_link": "README.md#model-hipsterbrowndofbotarm"
+    },
+    {
+      "api": "rdk:component:gripper",
+      "model": "hipsterbrown:dofbot:gripper",
+      "short_description": "Provide a short (100 characters or less) description of this model here",
+      "markdown_link": "README.md#model-hipsterbrowndofbotgripper"
+    }
+  ],
+  "applications": null,
+  "markdown_link": "README.md",
+  "entrypoint": "bin/dofbot",
+  "first_run": "",
+  "build": {
+    "build": "make module.tar.gz",
+    "setup": "make setup",
+    "path": "module.tar.gz",
+    "arch": [
+      "linux/arm64"
+    ]
+  }
+}

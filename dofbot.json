@@ -1,0 +1,203 @@
+{
+  "name": "dofbot",
+  "links": [
+    {
+      "id": "base",
+      "parent": "world",
+      "translation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "ArmBaseLink",
+      "parent": "waist",
+      "translation": {
+        "x": 0,
+        "y": 0,
+        "z": 90
+      },
+      "geometry": {
+        "x": 80,
+        "y": 80,
+        "z": 120,
+        "translation": {
+          "x": 0,
+          "y": 0,
+          "z": 60
+        }
+      }
+    },
+    {
+      "id": "ArmLink1",
+      "parent": "shoulder",
+      "translation": {
+        "x": 95,
+        "y": 0,
+        "z": 0
+      },
+      "geometry": {
+        "x": 100,
+        "y": 45,
+        "z": 45,
+        "translation": {
+          "x": 70,
+          "y": 0,
+          "z": 0
+        },
+        "orientation": {
+          "type": "ov_degrees",
+          "value": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "ArmLink2",
+      "parent": "elbow",
+      "translation": {
+        "x": 0,
+        "y": 0,
+        "z": -95
+      },
+      "geometry": {
+        "x": 40,
+        "y": 40,
+        "z": 95,
+        "translation": {
+          "x": 0,
+          "y": 0,
+          "z": -47.5
+        },
+        "orientation": {
+          "type": "ov_degrees",
+          "value": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "ArmLink3",
+      "parent": "wrist_pitch",
+      "translation": {
+        "x": -75,
+        "y": 0,
+        "z": 0
+      },
+      "geometry": {
+        "x": 95,
+        "y": 40,
+        "z": 40,
+        "translation": {
+          "x": -30,
+          "y": 0,
+          "z": 0
+        },
+        "orientation": {
+          "type": "ov_degrees",
+          "value": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "ArmLink4",
+      "parent": "wrist_roll",
+      "translation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "geometry": {
+        "x": 75,
+        "y": 35,
+        "z": 35,
+        "translation": {
+          "x": -35,
+          "y": 0,
+          "z": 0
+        },
+        "orientation": {
+          "type": "ov_degrees",
+          "value": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          }
+        }
+      }
+    }
+  ],
+  "joints": [
+    {
+      "id": "waist",
+      "type": "revolute",
+      "parent": "base",
+      "axis": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "max": 180,
+      "min": 0
+    },
+    {
+      "id": "shoulder",
+      "type": "revolute",
+      "parent": "ArmBaseLink",
+      "axis": {
+        "x": 0,
+        "y": -1,
+        "z": 0
+      },
+      "max": 180,
+      "min": 0
+    },
+    {
+      "id": "elbow",
+      "type": "revolute",
+      "parent": "ArmLink1",
+      "axis": {
+        "x": 0,
+        "y": -1,
+        "z": 0
+      },
+      "max": 180,
+      "min": 0
+    },
+    {
+      "id": "wrist_pitch",
+      "type": "revolute",
+      "parent": "ArmLink2",
+      "axis": {
+        "x": 0,
+        "y": -1,
+        "z": 0
+      },
+      "max": 180,
+      "min": 0
+    },
+    {
+      "id": "wrist_roll",
+      "type": "revolute",
+      "parent": "ArmLink3",
+      "axis": {
+        "x": -1,
+        "y": 0,
+        "z": 0
+      },
+      "max": 270,
+      "min": 0
+    }
+  ]
+}
