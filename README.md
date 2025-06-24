@@ -48,3 +48,5 @@ If your model implements DoCommand, provide an example payload of each command t
   }
 }
 ```
+
+## Model hipsterbrown:dofbot:gripper
