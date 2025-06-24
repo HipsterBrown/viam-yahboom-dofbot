@@ -56,11 +56,11 @@ type Config struct {
 // The path is the JSON path in your robot's config (not the `Config` struct) to the
 // resource being validated; e.g. "components.0".
 func (cfg *Config) Validate(path string) ([]string, []string, error) {
-	if cfg.Speed < 0 || cfg.Speed > maxSpeed {
-		return nil, nil, fmt.Errorf("speed must be between 0 and %d, you have %f", maxSpeed, cfg.Speed)
+	if cfg.Speed < minSpeed || cfg.Speed > maxSpeed {
+		return nil, nil, fmt.Errorf("speed_degs_per_sec must be between %d and %d, you have %f", minSpeed, maxSpeed, cfg.Speed)
 	}
 	if cfg.Acceleration < 0 || cfg.Acceleration > maxAccel {
-		return nil, nil, fmt.Errorf("acceleration must be between 0 and %d, you have %f", maxAccel, cfg.Acceleration)
+		return nil, nil, fmt.Errorf("acceleration_degs_per_sec_per_sec must be between 0 and %d, you have %f", maxAccel, cfg.Acceleration)
 	}
 	return nil, nil, nil
 }

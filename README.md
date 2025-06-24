@@ -1,18 +1,19 @@
-# Module dofbot 
+# Yahboom DofBot Robotic Arm Module
 
-Provide a description of the purpose of the module and any relevant information.
+This is a [Viam module](https://docs.viam.com/how-tos/create-module/) for the [Yahboom DofBot](https://category.yahboom.net/collections/r-robotics-arm/products/dofbot-pi) robotic arm.
+It provides access to teleoperate and integrate motion planning into this affordable starter arm.
 
 ## Model hipsterbrown:dofbot:arm
 
-Provide a description of the model and any relevant information.
+Control the individual joints and end effector position of the Yahboom DofBot.
 
 ### Configuration
 The following attribute template can be used to configure this model:
 
 ```json
 {
-"attribute_1": <float>,
-"attribute_2": <string>
+"speed_degs_per_sec": <float>,
+"acceleration_degs_per_sec_per_sec": <float>
 }
 ```
 
@@ -22,31 +23,22 @@ The following attributes are available for this model:
 
 | Name          | Type   | Inclusion | Description                |
 |---------------|--------|-----------|----------------------------|
-| `attribute_1` | float  | Required  | Description of attribute 1 |
-| `attribute_2` | string | Optional  | Description of attribute 2 |
+| `speed_degs_per_sec` | float  | Optional  |The rotational speed of the joints (must be greater than 3 and less than 180). Defaults to 10 degrees/second. |
+| `acceleration_degs_per_sec_per_sec` | float | Optional  | The acceleration of joints in radians per second increase per second. The default is 20 degrees/second^2 |
 
 #### Example Configuration
 
 ```json
 {
-  "attribute_1": 1.0,
-  "attribute_2": "foo"
-}
-```
-
-### DoCommand
-
-If your model implements DoCommand, provide an example payload of each command that is supported and the arguments that can be used. If your model does not implement DoCommand, remove this section.
-
-#### Example DoCommand
-
-```json
-{
-  "command_name": {
-    "arg1": "foo",
-    "arg2": 1
-  }
+  "speed_degs_per_sec": 12,
+  "acceleration_degs_per_sec_per_sec": 0
 }
 ```
 
 ## Model hipsterbrown:dofbot:gripper
+
+Control the gripper of the Yahboom DofBot.
+
+### Configuration
+
+No configuration required.

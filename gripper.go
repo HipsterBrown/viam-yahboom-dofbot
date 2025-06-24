@@ -8,13 +8,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"go.viam.com/rdk/components/arm"
 	"go.viam.com/rdk/components/gripper"
 	"go.viam.com/rdk/logging"
 	"go.viam.com/rdk/referenceframe"
 	"go.viam.com/rdk/resource"
 	"go.viam.com/rdk/spatialmath"
-	"go.viam.com/utils"
 )
 
 var (
@@ -23,15 +21,11 @@ var (
 
 // GripperConfig configuration for the yahboom gripper
 type GripperConfig struct {
-	Arm string `json:"arm"`
 }
 
 // Validate validates the gripper config
 func (cfg *GripperConfig) Validate(path string) ([]string, []string, error) {
-	if cfg.Arm == "" {
-		return nil, nil, utils.NewConfigValidationFieldRequiredError(path, "arm")
-	}
-	return []string{cfg.Arm}, nil, nil
+	return nil, nil, nil
 }
 
 // dofbotGripper represents the yahboom dofbot gripper
@@ -40,7 +34,6 @@ type dofbotGripper struct {
 
 	name       resource.Name
 	logger     logging.Logger
-	arm        arm.Arm
 	controller *YahboomServoController
 	model      referenceframe.Model
 
@@ -60,23 +53,15 @@ func init() {
 }
 
 func newDofbotGripper(ctx context.Context, deps resource.Dependencies, conf resource.Config, logger logging.Logger) (gripper.Gripper, error) {
-	newConf, err := resource.NativeConfig[*GripperConfig](conf)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get the arm dependency
-	armComponent, err := arm.FromDependencies(deps, newConf.Arm)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get arm dependency %s: %w", newConf.Arm, err)
-	}
-
 	controller, err := NewYahboomServoController()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create servo controller: %w", err)
+	}
 
 	g := &dofbotGripper{
 		name:       conf.ResourceName(),
 		logger:     logger,
-		arm:        armComponent,
 		controller: controller,
 		model:      referenceframe.NewSimpleModel("dofbot_gripper"),
 	}

@@ -3,18 +3,18 @@
   "module_id": "hipsterbrown:dofbot",
   "visibility": "public",
   "url": "https://github.com/hipsterbrown/viam-yahboom-dofbot",
-  "description": "Modular arm component: arm",
+  "description": "Control the arm servos and gripper of the Yahboom Dofbot",
   "models": [
     {
       "api": "rdk:component:arm",
       "model": "hipsterbrown:dofbot:arm",
-      "short_description": "Provide a short (100 characters or less) description of this model here",
+      "short_description": "Control the joint position and end effector pose of the Yahboom Dofbot",
       "markdown_link": "README.md#model-hipsterbrowndofbotarm"
     },
     {
       "api": "rdk:component:gripper",
       "model": "hipsterbrown:dofbot:gripper",
-      "short_description": "Provide a short (100 characters or less) description of this model here",
+      "short_description": "Control the gripper of the Yahboom Dofbot",
       "markdown_link": "README.md#model-hipsterbrowndofbotgripper"
     }
   ],
