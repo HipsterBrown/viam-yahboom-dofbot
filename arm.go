@@ -27,13 +27,8 @@ var (
 )
 
 const (
-	defaultSpeed = 1000
-	defaultAccel = 100
-	maxSpeed     = 180
-	minSpeed     = 3
-	maxAccel     = 1145
-	minLimit     = -math.Pi / 2
-	maxLimit     = math.Pi / 2
+	minLimit = -math.Pi / 2
+	maxLimit = math.Pi / 2
 )
 
 //go:embed dofbot.json
@@ -61,8 +56,7 @@ func (cfg *Config) Validate(path string) ([]string, []string, error) {
 type dofbotArm struct {
 	resource.AlwaysRebuild
 
-	name resource.Name
-
+	name       resource.Name
 	logger     logging.Logger
 	cfg        *Config
 	opMgr      *operation.SingleOperationManager
@@ -210,7 +204,10 @@ func (s *dofbotArm) MoveToJointPositions(ctx context.Context, positions []refere
 
 		// Convert radians to degrees
 		degrees := radians * 180.0 / math.Pi
-		servoAngle := (-degrees) + 90
+		if i != 0 {
+			degrees = -degrees
+		}
+		servoAngle := degrees + 90
 
 		servoAngles[i] = int(math.Round(servoAngle))
 
@@ -238,7 +235,10 @@ func (s *dofbotArm) MoveToJointPositions(ctx context.Context, positions []refere
 			// Convert current position from radians to servo angle for comparison
 			currentRadians := s.jointPos[i]
 			currentDegrees := currentRadians * 180.0 / math.Pi
-			servoAngle := (-currentDegrees) + 90
+			if i != 0 {
+				currentDegrees = -currentDegrees
+			}
+			servoAngle := currentDegrees + 90
 
 			movement := math.Abs(float64(target) - servoAngle)
 			if movement > maxMovement {
@@ -301,7 +301,10 @@ func (s *dofbotArm) JointPositions(ctx context.Context, extra map[string]interfa
 			positions[i] = referenceframe.Input{Value: s.jointPos[i]}
 		} else {
 			// Apply reverse translation from servo angles to joint angles
-			jointDegrees := -(float64(angle) - 90.0) // Maps 0° to -90°, 270° to 180°
+			jointDegrees := float64(angle) - 90.0 // Maps 0° to -90°, 270° to 180°
+			if i != 0 {
+				jointDegrees = -jointDegrees
+			}
 
 			// Convert degrees to radians
 			radians := jointDegrees * math.Pi / 180.0
