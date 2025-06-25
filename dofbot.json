@@ -1,203 +1,262 @@
 {
   "name": "dofbot",
-  "links": [
-    {
-      "id": "base",
-      "parent": "world",
-      "translation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      }
-    },
-    {
-      "id": "ArmBaseLink",
-      "parent": "waist",
-      "translation": {
-        "x": 0,
-        "y": 0,
-        "z": 90
-      },
-      "geometry": {
-        "x": 80,
-        "y": 80,
-        "z": 120,
-        "translation": {
-          "x": 0,
-          "y": 0,
-          "z": 60
-        }
-      }
-    },
-    {
-      "id": "ArmLink1",
-      "parent": "shoulder",
-      "translation": {
-        "x": 95,
-        "y": 0,
-        "z": 0
-      },
-      "geometry": {
-        "x": 100,
-        "y": 45,
-        "z": 45,
-        "translation": {
-          "x": 70,
-          "y": 0,
-          "z": 0
-        },
-        "orientation": {
-          "type": "ov_degrees",
-          "value": {
-            "x": 0,
-            "y": 0,
-            "z": 1
-          }
-        }
-      }
-    },
-    {
-      "id": "ArmLink2",
-      "parent": "elbow",
-      "translation": {
-        "x": 0,
-        "y": 0,
-        "z": -95
-      },
-      "geometry": {
-        "x": 40,
-        "y": 40,
-        "z": 95,
-        "translation": {
-          "x": 0,
-          "y": 0,
-          "z": -47.5
-        },
-        "orientation": {
-          "type": "ov_degrees",
-          "value": {
-            "x": 0,
-            "y": 0,
-            "z": 1
-          }
-        }
-      }
-    },
-    {
-      "id": "ArmLink3",
-      "parent": "wrist_pitch",
-      "translation": {
-        "x": -75,
-        "y": 0,
-        "z": 0
-      },
-      "geometry": {
-        "x": 95,
-        "y": 40,
-        "z": 40,
-        "translation": {
-          "x": -30,
-          "y": 0,
-          "z": 0
-        },
-        "orientation": {
-          "type": "ov_degrees",
-          "value": {
-            "x": 0,
-            "y": 0,
-            "z": 1
-          }
-        }
-      }
-    },
-    {
-      "id": "ArmLink4",
-      "parent": "wrist_roll",
-      "translation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "geometry": {
-        "x": 75,
-        "y": 35,
-        "z": 35,
-        "translation": {
-          "x": -35,
-          "y": 0,
-          "z": 0
-        },
-        "orientation": {
-          "type": "ov_degrees",
-          "value": {
-            "x": 0,
-            "y": 0,
-            "z": 1
-          }
-        }
-      }
-    }
-  ],
   "joints": [
     {
-      "id": "waist",
-      "type": "revolute",
-      "parent": "base",
       "axis": {
         "x": 0,
         "y": 0,
         "z": 1
       },
-      "max": 180,
-      "min": 0
+      "id": "joint1",
+      "max": 90.0002104591497,
+      "min": -90.0002104591497,
+      "parent": "base_link",
+      "type": "revolute"
     },
     {
-      "id": "shoulder",
-      "type": "revolute",
-      "parent": "ArmBaseLink",
       "axis": {
         "x": 0,
-        "y": -1,
-        "z": 0
+        "y": 0,
+        "z": 1
       },
-      "max": 180,
-      "min": 0
+      "id": "joint2",
+      "max": 90.0002104591497,
+      "min": -90.0002104591497,
+      "parent": "link1",
+      "type": "revolute"
     },
     {
-      "id": "elbow",
-      "type": "revolute",
-      "parent": "ArmLink1",
       "axis": {
         "x": 0,
-        "y": -1,
-        "z": 0
+        "y": 0,
+        "z": 1
       },
-      "max": 180,
-      "min": 0
+      "id": "joint3",
+      "max": 90.0002104591497,
+      "min": -90.0002104591497,
+      "parent": "link2",
+      "type": "revolute"
     },
     {
-      "id": "wrist_pitch",
-      "type": "revolute",
-      "parent": "ArmLink2",
       "axis": {
         "x": 0,
-        "y": -1,
-        "z": 0
+        "y": 0,
+        "z": 1
       },
-      "max": 180,
-      "min": 0
+      "id": "joint4",
+      "max": 90.0002104591497,
+      "min": -90.0002104591497,
+      "parent": "link3",
+      "type": "revolute"
     },
     {
-      "id": "wrist_roll",
-      "type": "revolute",
-      "parent": "ArmLink3",
       "axis": {
-        "x": -1,
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "id": "joint5",
+      "max": 180.0004209182994,
+      "min": -90.0002104591497,
+      "parent": "link4",
+      "type": "revolute"
+    }
+  ],
+  "links": [
+    {
+      "geometry": {
+        "type": "box",
+        "x": 80,
+        "y": 80,
+        "z": 80,
+        "r": 0,
+        "l": 0,
+        "translation": {
+          "X": 0,
+          "Y": 0,
+          "Z": 40
+        },
+        "orientation": {
+          "type": "quaternion",
+          "value": {
+            "W": 1,
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          }
+        }
+      },
+      "id": "base_link",
+      "orientation": {
+        "type": "euler_angles",
+        "value": {
+          "pitch": 0,
+          "roll": -0.010805,
+          "yaw": 0
+        }
+      },
+      "parent": "world",
+      "translation": {
+        "x": 0,
+        "y": 0,
+        "z": 66.05
+      }
+    },
+    {
+      "geometry": {
+        "type": "box",
+        "x": 45,
+        "y": 25,
+        "z": 45,
+        "r": 0,
+        "l": 0,
+        "translation": {
+          "X": 0,
+          "Y": 0,
+          "Z": 22.5
+        },
+        "orientation": {
+          "type": "quaternion",
+          "value": {
+            "W": 1,
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          }
+        }
+      },
+      "id": "link1",
+      "orientation": {
+        "type": "euler_angles",
+        "value": {
+          "pitch": 1.5708,
+          "roll": 0,
+          "yaw": 0
+        }
+      },
+      "parent": "joint1",
+      "translation": {
+        "x": 0,
+        "y": -0.31872999999999996,
+        "z": 41.45
+      }
+    },
+    {
+      "geometry": {
+        "type": "box",
+        "x": 90,
+        "y": 40,
+        "z": 40,
+        "r": 0,
+        "l": 0,
+        "translation": {
+          "X": -45,
+          "Y": 0,
+          "Z": 0
+        },
+        "orientation": {
+          "type": "quaternion",
+          "value": {
+            "W": 1,
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          }
+        }
+      },
+      "id": "link2",
+      "orientation": {
+        "type": "euler_angles",
+        "value": {
+          "pitch": 0,
+          "roll": 0,
+          "yaw": 0
+        }
+      },
+      "parent": "joint2",
+      "translation": {
+        "x": -82.85,
         "y": 0,
         "z": 0
+      }
+    },
+    {
+      "geometry": {
+        "type": "box",
+        "x": 100,
+        "y": 40,
+        "z": 40,
+        "r": 0,
+        "l": 0,
+        "translation": {
+          "X": -50,
+          "Y": 0,
+          "Z": 0
+        },
+        "orientation": {
+          "type": "quaternion",
+          "value": {
+            "W": 1,
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          }
+        }
       },
-      "max": 270,
-      "min": 0
+      "id": "link3",
+      "orientation": {
+        "type": "euler_angles",
+        "value": {
+          "pitch": 0,
+          "roll": 0,
+          "yaw": 0.0083081
+        }
+      },
+      "parent": "joint3",
+      "translation": {
+        "x": -82.85,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "geometry": {
+        "type": "box",
+        "x": 85,
+        "y": 35,
+        "z": 35,
+        "r": 0,
+        "l": 0,
+        "translation": {
+          "X": -40,
+          "Y": 0,
+          "Z": 0
+        },
+        "orientation": {
+          "type": "quaternion",
+          "value": {
+            "W": 1,
+            "X": 0,
+            "Y": 0,
+            "Z": 0
+          }
+        }
+      },
+      "id": "link4",
+      "orientation": {
+        "type": "euler_angles",
+        "value": {
+          "pitch": -1.57,
+          "roll": 0,
+          "yaw": 0
+        }
+      },
+      "parent": "joint4",
+      "translation": {
+        "x": -73.85,
+        "y": -1,
+        "z": 0
+      }
     }
   ]
 }

@@ -32,6 +32,8 @@ const (
 	maxSpeed     = 180
 	minSpeed     = 3
 	maxAccel     = 1145
+	minLimit     = -math.Pi / 2
+	maxLimit     = math.Pi / 2
 )
 
 //go:embed dofbot.json
@@ -130,11 +132,11 @@ func newDofbotArm(ctx context.Context, deps resource.Dependencies, rawConf resou
 		jointPos:     make([]float64, 5),
 		model:        model,
 		jointLimits: [][2]float64{
-			{0, math.Pi},
-			{0, math.Pi},
-			{0, math.Pi},
-			{0, math.Pi},
-			{0, 1.5 * math.Pi},
+			{minLimit, maxLimit},
+			{minLimit, maxLimit},
+			{minLimit, maxLimit},
+			{minLimit, maxLimit},
+			{minLimit, math.Pi},
 		},
 		cancelCtx:  cancelCtx,
 		cancelFunc: cancelFunc,
@@ -212,49 +214,108 @@ func (s *dofbotArm) MoveToJointPositions(ctx context.Context, positions []refere
 		values[i] = input.Value
 	}
 
+	// Validate input ranges and clamp positions
 	clampedPositions := make([]float64, len(values))
 	for i, pos := range values {
-		if i < len(s.jointLimits) {
-			min, max := s.jointLimits[i][0], s.jointLimits[i][1]
-			clampedPositions[i] = math.Max(min, math.Min(max, pos))
+		var min, max float64
+
+		if i < 4 { // Joints 1-4: -90° to 90° (-π/2 to π/2 radians)
+			min = -math.Pi / 2 // -90 degrees in radians
+			max = math.Pi / 2  // 90 degrees in radians
+		} else if i == 4 { // Joint 5: -90° to 180° (-π/2 to π radians)
+			min = -math.Pi / 2 // -90 degrees in radians
+			max = math.Pi      // 180 degrees in radians
 		} else {
-			clampedPositions[i] = pos
+			// For any additional joints beyond 5, use existing joint limits if available
+			if i < len(s.jointLimits) {
+				min, max = s.jointLimits[i][0], s.jointLimits[i][1]
+			} else {
+				min, max = pos, pos // No clamping if no limits defined
+			}
+		}
+
+		// Validate and clamp the position
+		if pos < min || pos > max {
+			s.logger.Warnf("Joint %d position %.3f rad (%.1f°) out of range [%.3f, %.3f] rad ([%.1f°, %.1f°]), clamping",
+				i+1, pos, pos*180/math.Pi, min, max, min*180/math.Pi, max*180/math.Pi)
+		}
+		clampedPositions[i] = math.Max(min, math.Min(max, pos))
+	}
+
+	// Convert radians to servo angles with translation
+	servoAngles := make([]int, 5)
+	for i, radians := range clampedPositions {
+		if i >= 5 {
+			break // Only process first 5 joints
+		}
+
+		// Convert radians to degrees
+		degrees := radians * 180.0 / math.Pi
+
+		// Apply angle translation based on joint
+		var servoAngle float64
+		if i == 4 { // Joint 5: translate -90° to 180° → 0° to 270°
+			servoAngle = degrees + 90.0 // Maps -90° to 0°, 180° to 270°
+		} else { // Joints 1-4: translate -90° to 90° → 0° to 180°
+			servoAngle = degrees + 90.0 // Maps -90° to 0°, 90° to 180°
+		}
+
+		servoAngles[i] = int(math.Round(servoAngle))
+
+		// Additional validation to ensure servo angles are in valid ranges
+		if i == 4 && (servoAngles[i] < 0 || servoAngles[i] > 270) {
+			s.logger.Errorf("Joint 5 servo angle %d out of range [0, 270]", servoAngles[i])
+			servoAngles[i] = int(math.Max(0, math.Min(270, float64(servoAngles[i]))))
+		} else if i < 4 && (servoAngles[i] < 0 || servoAngles[i] > 180) {
+			s.logger.Errorf("Joint %d servo angle %d out of range [0, 180]", i+1, servoAngles[i])
+			servoAngles[i] = int(math.Max(0, math.Min(180, float64(servoAngles[i]))))
 		}
 	}
 
-	servoAngles := make([]int, 5)
-	for i, radians := range clampedPositions {
-		degrees := radians * 180.0 / math.Pi
-		servoAngles[i] = int(math.Round(degrees))
-	}
-
+	// Read current gripper position
 	gripperPos, err := s.controller.ReadServo(6)
 	if err != nil {
 		s.logger.Warnf("Failed to read gripper position, using 90: %v", err)
 		gripperPos = 90
 	}
 
+	// Calculate movement time based on maximum joint movement
 	maxMovement := 0.0
 	for i, target := range servoAngles {
-		current := s.jointPos[i] * 180.0 / math.Pi
-		movement := math.Abs(float64(target) - current)
-		if movement > maxMovement {
-			maxMovement = movement
+		if i < len(s.jointPos) {
+			// Convert current position from radians to servo angle for comparison
+			currentRadians := s.jointPos[i]
+			currentDegrees := currentRadians * 180.0 / math.Pi
+			var currentServoAngle float64
+			if i == 4 {
+				currentServoAngle = currentDegrees + 90.0
+			} else {
+				currentServoAngle = currentDegrees + 90.0
+			}
+
+			movement := math.Abs(float64(target) - currentServoAngle)
+			if movement > maxMovement {
+				maxMovement = movement
+			}
 		}
 	}
 
 	moveTime := min(max(int(maxMovement*100), 100), 5000)
 
+	// Combine servo angles with gripper position
 	allPositions := append(servoAngles, gripperPos)
 
+	// Send command to controller
 	if err := s.controller.WriteAllServos(allPositions, moveTime); err != nil {
 		return fmt.Errorf("failed to move arm: %w", err)
 	}
 
+	// Update cached joint positions
 	s.mu.Lock()
 	copy(s.jointPos, clampedPositions)
 	s.mu.Unlock()
 
+	// Wait for movement to complete
 	time.Sleep(time.Duration(moveTime) * time.Millisecond)
 
 	return nil
@@ -285,7 +346,17 @@ func (s *dofbotArm) JointPositions(ctx context.Context, extra map[string]interfa
 			s.logger.Warnf("failed to read servo %d, using cached value: %v", i+1, err)
 			positions[i] = referenceframe.Input{Value: s.jointPos[i]}
 		} else {
-			radians := float64(angle) * math.Pi / 180.0
+			// Apply reverse translation from servo angles to joint angles
+			var jointDegrees float64
+			if i == 4 { // Joint 5: translate 0° to 270° → -90° to 180°
+				jointDegrees = float64(angle) - 90.0 // Maps 0° to -90°, 270° to 180°
+			} else { // Joints 1-4: translate 0° to 180° → -90° to 90°
+				jointDegrees = float64(angle) - 90.0 // Maps 0° to -90°, 180° to 90°
+			}
+
+			// Convert degrees to radians
+			radians := jointDegrees * math.Pi / 180.0
+
 			positions[i] = referenceframe.Input{Value: radians}
 			s.jointPos[i] = radians
 		}
