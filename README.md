@@ -11,15 +11,6 @@ Control the individual joints and end effector position of the Yahboom DofBot.
 
 No configuration required.
 
-#### Example Configuration
-
-```json
-{
-  "speed_degs_per_sec": 12,
-  "acceleration_degs_per_sec_per_sec": 0
-}
-```
-
 ## Model hipsterbrown:dofbot:gripper
 
 Control the gripper of the Yahboom DofBot.
