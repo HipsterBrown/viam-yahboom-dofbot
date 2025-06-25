@@ -217,22 +217,7 @@ func (s *dofbotArm) MoveToJointPositions(ctx context.Context, positions []refere
 	// Validate input ranges and clamp positions
 	clampedPositions := make([]float64, len(values))
 	for i, pos := range values {
-		var min, max float64
-
-		if i < 4 { // Joints 1-4: -90° to 90° (-π/2 to π/2 radians)
-			min = -math.Pi / 2 // -90 degrees in radians
-			max = math.Pi / 2  // 90 degrees in radians
-		} else if i == 4 { // Joint 5: -90° to 180° (-π/2 to π radians)
-			min = -math.Pi / 2 // -90 degrees in radians
-			max = math.Pi      // 180 degrees in radians
-		} else {
-			// For any additional joints beyond 5, use existing joint limits if available
-			if i < len(s.jointLimits) {
-				min, max = s.jointLimits[i][0], s.jointLimits[i][1]
-			} else {
-				min, max = pos, pos // No clamping if no limits defined
-			}
-		}
+		min, max := s.jointLimits[i][0], s.jointLimits[i][1]
 
 		// Validate and clamp the position
 		if pos < min || pos > max {
@@ -251,14 +236,7 @@ func (s *dofbotArm) MoveToJointPositions(ctx context.Context, positions []refere
 
 		// Convert radians to degrees
 		degrees := radians * 180.0 / math.Pi
-
-		// Apply angle translation based on joint
-		var servoAngle float64
-		if i == 4 { // Joint 5: translate -90° to 180° → 0° to 270°
-			servoAngle = degrees + 90.0 // Maps -90° to 0°, 180° to 270°
-		} else { // Joints 1-4: translate -90° to 90° → 0° to 180°
-			servoAngle = degrees + 90.0 // Maps -90° to 0°, 90° to 180°
-		}
+		servoAngle := (-degrees) + 90
 
 		servoAngles[i] = int(math.Round(servoAngle))
 
@@ -285,13 +263,7 @@ func (s *dofbotArm) MoveToJointPositions(ctx context.Context, positions []refere
 		if i < len(s.jointPos) {
 			// Convert current position from radians to servo angle for comparison
 			currentRadians := s.jointPos[i]
-			currentDegrees := currentRadians * 180.0 / math.Pi
-			var currentServoAngle float64
-			if i == 4 {
-				currentServoAngle = currentDegrees + 90.0
-			} else {
-				currentServoAngle = currentDegrees + 90.0
-			}
+			currentServoAngle := currentRadians * 180.0 / math.Pi
 
 			movement := math.Abs(float64(target) - currentServoAngle)
 			if movement > maxMovement {
@@ -347,12 +319,7 @@ func (s *dofbotArm) JointPositions(ctx context.Context, extra map[string]interfa
 			positions[i] = referenceframe.Input{Value: s.jointPos[i]}
 		} else {
 			// Apply reverse translation from servo angles to joint angles
-			var jointDegrees float64
-			if i == 4 { // Joint 5: translate 0° to 270° → -90° to 180°
-				jointDegrees = float64(angle) - 90.0 // Maps 0° to -90°, 270° to 180°
-			} else { // Joints 1-4: translate 0° to 180° → -90° to 90°
-				jointDegrees = float64(angle) - 90.0 // Maps 0° to -90°, 180° to 90°
-			}
+			jointDegrees := -(float64(angle) - 90.0) // Maps 0° to -90°, 270° to 180°
 
 			// Convert degrees to radians
 			radians := jointDegrees * math.Pi / 180.0
@@ -360,7 +327,7 @@ func (s *dofbotArm) JointPositions(ctx context.Context, extra map[string]interfa
 			positions[i] = referenceframe.Input{Value: radians}
 			s.jointPos[i] = radians
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 	return positions, nil
 }
