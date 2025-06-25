@@ -8,23 +8,8 @@ It provides access to teleoperate and integrate motion planning into this afford
 Control the individual joints and end effector position of the Yahboom DofBot.
 
 ### Configuration
-The following attribute template can be used to configure this model:
 
-```json
-{
-"speed_degs_per_sec": <float>,
-"acceleration_degs_per_sec_per_sec": <float>
-}
-```
-
-#### Attributes
-
-The following attributes are available for this model:
-
-| Name          | Type   | Inclusion | Description                |
-|---------------|--------|-----------|----------------------------|
-| `speed_degs_per_sec` | float  | Optional  |The rotational speed of the joints (must be greater than 3 and less than 180). Defaults to 10 degrees/second. |
-| `acceleration_degs_per_sec_per_sec` | float | Optional  | The acceleration of joints in radians per second increase per second. The default is 20 degrees/second^2 |
+No configuration required.
 
 #### Example Configuration
 

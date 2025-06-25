@@ -48,9 +48,6 @@ func init() {
 }
 
 type Config struct {
-	Speed        float32 `json:"speed_degs_per_sec,omitempty"`
-	Acceleration float32 `json:"acceleration_degs_per_sec_per_sec,omitempty"`
-	DefaultSpeed int     `json:"default_speed,omitempty"`
 }
 
 // Validate ensures all parts of the config are valid and important fields exist.
@@ -58,12 +55,6 @@ type Config struct {
 // The path is the JSON path in your robot's config (not the `Config` struct) to the
 // resource being validated; e.g. "components.0".
 func (cfg *Config) Validate(path string) ([]string, []string, error) {
-	if cfg.Speed < minSpeed || cfg.Speed > maxSpeed {
-		return nil, nil, fmt.Errorf("speed_degs_per_sec must be between %d and %d, you have %f", minSpeed, maxSpeed, cfg.Speed)
-	}
-	if cfg.Acceleration < 0 || cfg.Acceleration > maxAccel {
-		return nil, nil, fmt.Errorf("acceleration_degs_per_sec_per_sec must be between 0 and %d, you have %f", maxAccel, cfg.Acceleration)
-	}
 	return nil, nil, nil
 }
 
@@ -77,11 +68,7 @@ type dofbotArm struct {
 	opMgr      *operation.SingleOperationManager
 	controller *YahboomServoController
 
-	mu           sync.RWMutex
-	speed        float64
-	acceleration float64
-	defaultSpeed int
-
+	mu          sync.RWMutex
 	moveLock    sync.Mutex
 	isMoving    atomic.Bool
 	jointPos    []float64
@@ -121,16 +108,13 @@ func newDofbotArm(ctx context.Context, deps resource.Dependencies, rawConf resou
 	cancelCtx, cancelFunc := context.WithCancel(context.Background())
 
 	arm := &dofbotArm{
-		name:         rawConf.ResourceName(),
-		cfg:          conf,
-		opMgr:        operation.NewSingleOperationManager(),
-		logger:       logger,
-		controller:   controller,
-		speed:        float64(conf.Speed),
-		acceleration: float64(conf.Acceleration),
-		defaultSpeed: conf.DefaultSpeed,
-		jointPos:     make([]float64, 5),
-		model:        model,
+		name:       rawConf.ResourceName(),
+		cfg:        conf,
+		opMgr:      operation.NewSingleOperationManager(),
+		logger:     logger,
+		controller: controller,
+		jointPos:   make([]float64, 5),
+		model:      model,
 		jointLimits: [][2]float64{
 			{minLimit, maxLimit},
 			{minLimit, maxLimit},
@@ -140,16 +124,6 @@ func newDofbotArm(ctx context.Context, deps resource.Dependencies, rawConf resou
 		},
 		cancelCtx:  cancelCtx,
 		cancelFunc: cancelFunc,
-	}
-
-	if arm.speed == 0 {
-		arm.speed = defaultSpeed
-	}
-	if arm.acceleration == 0 {
-		arm.acceleration = defaultAccel
-	}
-	if arm.defaultSpeed == 0 {
-		arm.defaultSpeed = defaultSpeed
 	}
 
 	return arm, nil
@@ -263,16 +237,24 @@ func (s *dofbotArm) MoveToJointPositions(ctx context.Context, positions []refere
 		if i < len(s.jointPos) {
 			// Convert current position from radians to servo angle for comparison
 			currentRadians := s.jointPos[i]
-			currentServoAngle := currentRadians * 180.0 / math.Pi
+			currentDegrees := currentRadians * 180.0 / math.Pi
+			servoAngle := (-currentDegrees) + 90
 
-			movement := math.Abs(float64(target) - currentServoAngle)
+			movement := math.Abs(float64(target) - servoAngle)
 			if movement > maxMovement {
 				maxMovement = movement
 			}
 		}
 	}
 
-	moveTime := min(max(int(maxMovement*100), 100), 5000)
+	// Calculate move time based on degrees per second requirements
+	// Min speed: 10 degrees per second (slower) = more time
+	// Max speed: 30 degrees per second (faster) = less time
+	maxTimeMs := int(maxMovement * 1000 / 10) // Min speed: 10 deg/sec
+	minTimeMs := int(maxMovement * 1000 / 30) // Max speed: 30 deg/sec
+
+	// Ensure moveTime is within bounds
+	moveTime := max(minTimeMs, min(maxTimeMs, 5000))
 
 	// Combine servo angles with gripper position
 	allPositions := append(servoAngles, gripperPos)
