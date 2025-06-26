@@ -248,13 +248,13 @@ func (s *dofbotArm) MoveToJointPositions(ctx context.Context, positions []refere
 	}
 
 	// Calculate move time based on degrees per second requirements
-	// Min speed: 10 degrees per second (slower) = more time
+	// Min speed: 20 degrees per second (slower) = more time
 	// Max speed: 30 degrees per second (faster) = less time
-	maxTimeMs := int(maxMovement * 1000 / 10) // Min speed: 10 deg/sec
+	maxTimeMs := int(maxMovement * 1000 / 20) // Min speed: 10 deg/sec
 	minTimeMs := int(maxMovement * 1000 / 30) // Max speed: 30 deg/sec
 
 	// Ensure moveTime is within bounds
-	moveTime := max(minTimeMs, min(maxTimeMs, 5000))
+	moveTime := max(minTimeMs, min(maxTimeMs, 500))
 
 	// Combine servo angles with gripper position
 	allPositions := append(servoAngles, gripperPos)
